@@ -9,6 +9,7 @@ fabric.Canvas.prototype.disableAll = function () {
 	for (let i = 0, len = this.size(); i < len; i += 1) {
 		objects[i].set('disabled', true);
 		objects[i].set('hoverCursor', 'default');
+		canvas.sendToBack(objects[i]);
 		if (objects[i].get('fill') === '#d0d765') {
 			objects[i].set('fill', '#fbfcf2');
 		}
@@ -27,6 +28,30 @@ fabric.Canvas.prototype.resetGame = function () {
 	}
 	canvas.renderAll();
 };
+
+// Animate Boxes
+function animateObject(object) {
+	const duration = 200;
+	canvas.bringToFront(object);
+	object.animate('scaleX', '1.2', {
+		onChange: canvas.renderAll.bind(canvas),
+		duration,
+	});
+	object.animate('scaleY', '1.2', {
+		onChange: canvas.renderAll.bind(canvas),
+		duration,
+	});
+	setTimeout(() => {
+		object.animate('scaleX', '1', {
+			onChange: canvas.renderAll.bind(canvas),
+			duration,
+		});
+		object.animate('scaleY', '1', {
+			onChange: canvas.renderAll.bind(canvas),
+			duration,
+		});
+	}, duration);
+}
 
 // Check if all boxes are selected
 fabric.Canvas.prototype.winGame = function () {
@@ -62,6 +87,7 @@ function position(evt) {
 		selectedBox.set('fill', '#276b68');
 		selectedBox.set('selected', true);
 		canvas.disableAll();
+		animateObject(selectedBox);
 
 		// Selecting active boxes
 		const activeBoxes = [];
@@ -89,6 +115,7 @@ function position(evt) {
 					activeBoxes[i].set('fill', '#d0d765');
 					activeBoxes[i].set('active', true);
 					activeBoxes[i].set('disabled', false);
+					animateObject(activeBoxes[i]);
 
 					gameOver = false;
 				}
@@ -108,18 +135,18 @@ function position(evt) {
 }
 
 // Generate 100 boxes
-let leftPosition = -70;
-let topPosition = -70;
+let leftPosition = 0;
+let topPosition = 0;
 
 for (let i = 1; i < 11; i += 1) {
-	topPosition = -70;
-	leftPosition += 70;
+	topPosition = 0;
+	leftPosition += 50;
 
 	for (let j = 1; j < 11; j += 1) {
-		topPosition += 70;
+		topPosition += 50;
 		const rectangle = new fabric.Rect({
-			height: 70,
-			width: 70,
+			height: 50,
+			width: 50,
 			fill: '#fbfcf2',
 			left: leftPosition,
 			top: topPosition,
@@ -138,6 +165,8 @@ for (let i = 1; i < 11; i += 1) {
 			hasBorders: false,
 			hoverCursor: 'pointer',
 			id: `${j}.${i}`,
+			originX: 'center',
+			originY: 'center',
 		});
 		rectangle.on('mousedown', position);
 		canvas.add(rectangle);
